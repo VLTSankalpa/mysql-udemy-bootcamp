@@ -20,11 +20,11 @@ SELECT *
 FROM products
 ORDER BY Price DESC;
 
---Step 4.
+--Step 4. (query across tables)
 
 SELECT 
  customerName,
- COUNT(*) AS 'number of orders'
+ COUNT(*) AS number_of_orders
 FROM customers
 INNER JOIN orders
  ON orders.customerID = customers.customerID
@@ -379,16 +379,30 @@ SELECT c1, c2 FROM t
 WHERE condition;
 
 -- string function INSTR
-select * from nodes WHERE INSTR(device_type , '901') AND INSTR(device_name , 'CMBS') AND INSTR(device_name , 'VLL')> 0 limit 30;
+SELECT *
+FROM   nodes
+WHERE  Instr(device_type, '901')
+       AND Instr(device_name, 'CMBS')
+       AND Instr(device_name, 'VLL') > 0
+LIMIT  30;  
 
 -- alais as <alais_name>
 -- asending and desending order from alais
 -- group by with aggregate function (count, average, sum)
 -- in local database group by not working without aggregate function -- need to t-shoot
-SELECT count(device_name) as test,device_type FROM nodes GROUP BY device_type order by test desc;
+
+SELECT Count(device_name) AS test,
+       device_type
+FROM   nodes
+GROUP  BY device_type
+ORDER  BY test DESC;  
 
 -- limit and offset
-select * from nodes order by device_name asc limit 20 offset 16;
+
+SELECT *
+FROM   nodes
+ORDER  BY device_name ASC
+LIMIT  20 offset 16;  
 
 -- create new database
 mysql> show databases;
@@ -405,3 +419,232 @@ mysql> show databases;
 6 rows in set (0.00 sec)
 
 mysql>
+
+-- like and wildcards
+
+SELECT *
+FROM   nodes
+WHERE  device_name LIKE '%CMBS%'
+LIMIT  5;
+
+SELECT *
+FROM   nodes
+WHERE  serial_number LIKE '%FOC%'
+       AND device_type LIKE '%540%'
+       AND device_name LIKE '%VLL%';  
+
+-- string functions ## concat
+
+SELECT Concat(device_name, '                   ', ip) AS new
+FROM   nodes
+LIMIT  5;  
+
+-- string functions ## concat_ws (concat with separator)
+
+SELECT Concat_ws('___________', device_name, ip) AS new
+FROM   nodes
+LIMIT  5;  
+
+-- string functions ## substring
+
+SELECT Substring(device_name, -5)
+FROM   nodes
+LIMIT  5;  
+
+-- string functions ## char_lenght
+
+SELECT *,
+       Char_length(device_name) AS hostname_length
+FROM   nodes
+WHERE  Char_length(device_name) > 40;  
+
+-- string functions ## upper
+SELECT CONCAT('MY FAVORITE BOOK IS ', UPPER(title)) FROM books;
+
+-- getting distinct values in a column
+
+SELECT DISTINCT( device_type )
+FROM   nodes;  
+
+-- count distinct authors
+
+SELECT Count(DISTINCT author_lname)
+FROM   books;  
+
+-- count the number of book title's that contain word 'the'
+
+SELECT Count(title) AS the_title_count
+FROM   books
+WHERE  title LIKE '%the%';  
+
+-- group by first and last names and count books for each individual author
+-- group by with count and sum
+
+SELECT author_fname,
+       author_lname,
+       Count(*)   AS book_count,
+       Sum(pages) AS page_count
+FROM   books
+GROUP  BY author_fname,
+          author_lname; 
+
+
+-- sub queries
+
+SELECT *
+FROM   books
+WHERE  pages = (SELECT Max(pages)
+                FROM   books); 
+
+-- without sub query
+SELECT title,
+       pages
+FROM   books
+ORDER  BY pages DESC
+LIMIT  1;  
+
+
+-- Min and group by
+SELECT author_fname,
+       author_lname,
+       min(pages) AS min_page_count
+FROM   books
+GROUP  BY author_fname,
+          author_lname; 
+
+-- greater than lesser than
+SELECT title, released_year FROM books
+    WHERE released_year >= 2000 ORDER BY released_year;
+
+
+SELECT title, stock_quantity FROM books WHERE stock_quantity >= 100;
+
+-- AND operator
+SELECT * 
+FROM books
+WHERE author_lname='Eggers' 
+    AND released_year > 2010 
+    AND title LIKE '%novel%';
+
+-- OR  operator
+SELECT title, 
+       author_lname, 
+       released_year, 
+       stock_quantity 
+FROM   books 
+WHERE  author_lname = 'Eggers' 
+              || released_year > 2010 
+OR     stock_quantity > 100;
+
+
+-- BETWEEN operator
+SELECT title, released_year FROM books 
+WHERE released_year BETWEEN 2004 AND 2015;
+
+-- order by with colunm numbers
+SELECT title, author_fname, author_lname 
+FROM books ORDER BY 2;
+
+-- ###################################################
+-- Case Statements
+SELECT title, released_year,
+       CASE 
+         WHEN released_year >= 2000 THEN 'Modern Lit'
+         ELSE '20th Century Lit'
+       END AS GENRE
+FROM books;
+
+-- here based on stock_quantity value we are creating new colunm called STOCK
+-- always start the statement with CASE 
+-- always end the statement with END
+-- WHEN to define condition
+-- THEN to define action
+
+SELECT title, stock_quantity,
+    CASE 
+        WHEN stock_quantity BETWEEN 0 AND 50 THEN '*'
+        WHEN stock_quantity BETWEEN 51 AND 100 THEN '**'
+        WHEN stock_quantity BETWEEN 101 AND 150 THEN '***'
+        ELSE '****'
+    END AS STOCK
+FROM books;
+
+-- #######################################################
+-- Relational database concepts
+-- #######################################################
+
+
+-- Primary key -  Table column (or combination of columns) designated to uniquely identify each table record
+-- Foreign key -  Column or group of columns in a relational database table that provides a link between data in two tables
+
+-- When we define our schema with primary key. RDMS (MySQL) will not allow us to create dupliate entery for for primary key colunm
+-- Also when we define our schema with foreign key RDMS will not allow us to create table entery that contain foreign key colunm value doesn't including in other table
+-- as an example we cant create a order entery in the order table for customer id does not exisit in customer table
+
+/*
+#######################################################
+different types of relational database tables.
+#######################################################
+
+One to One relationship - single row of the first table can only be related to one and only one records of a second table
+One to many or many to one relationship - Any single rows of the first table can be related to one or more rows of the second tables
+Many to many relationships - Each record of the first table can relate to any records (or no records) in the second table
+*/
+
+
+-- Creating the customers and orders tables (define schema)
+
+CREATE TABLE customers(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    email VARCHAR(100)
+);
+
+CREATE TABLE orders(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_date DATE,
+    amount DECIMAL(8,2),
+    customer_id INT,
+    FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+
+-- Inserting some customers and orders
+
+INSERT INTO customers (first_name, last_name, email) 
+VALUES ('Boy', 'George', 'george@gmail.com'),
+       ('George', 'Michael', 'gm@gmail.com'),
+       ('David', 'Bowie', 'david@gmail.com'),
+       ('Blue', 'Steele', 'blue@gmail.com'),
+       ('Bette', 'Davis', 'bette@aol.com');
+       
+INSERT INTO orders (order_date, amount, customer_id)
+VALUES ('2016/02/10', 99.99, 1),
+       ('2017/11/11', 35.50, 1),
+       ('2014/12/12', 800.67, 2),
+       ('2015/01/03', 12.50, 2),
+       ('1999/04/11', 450.25, 5);
+
+
+-- This INSERT fails because of our fk constraint. No user with id: 98
+
+INSERT INTO orders (order_date, amount, customer_id)
+VALUES ('2016/06/06', 33.67, 98);
+
+-- write query that effect multiple tables with sub query
+select * from orders where customer_id = (select id from customers where first_name = 'Boy');
+
+
+-- #################################################
+-- SQL JOIN operations
+
+-- useless cross join (will create raws by combining both tables with all the possible combinations)
+select * from customers, orders;
+-- we can get meaningful inner join by adding where condition to above cross join 
+-- but we need to prepend table name with the colunm name in the where condition
+select * from customers, orders where customers.id=orders.customer_id;
+
+SELECT first_name, last_name, order_date, amount
+FROM customers, orders 
+    WHERE customers.id = orders.customer_id;
+
