@@ -65,10 +65,15 @@ the featurs they offer
 
 sudo apt-get install mysql-server
 sudo mysql_secure_ installation
+sudo su -
+-- use sudo otherwise auth_socket will giva a error
 sudo mysql -u root
+-- need to be root user in order to loging using mysql auth_socket without sudo
+mysql -u root
+
 --give sudo password
 
-
+/*
 mysql> USE mysql;
 mysql> CREATE USER 'tharindu'@'localhost' IDENTIFIED BY 'my_password';
 mysql> GRANT ALL PRIVILEGES ON *.* TO 'tharindu'@'localhost';
@@ -88,10 +93,42 @@ mysql> SELECT User, Host, plugin FROM mysql.user;
 6 rows in set (0.00 sec)
 mysql> exit;
 
+######################################################################
+The socket plugin checks whether the socket user name (the operating system user name) 
+matches the MySQL user name specified by the client program to the server.
+
+*/
 
 sudo service mysql restart
+-- need to loged as tharindu othewise mysql auth_socket will not work and give a loging error
 mysql -u tharindu
 
+-- if need to connect using mysql workbench we need a user with mysql_native_password
+-- we can use following command to change authentication plugin to mysql_native_password
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';
+
+-- if we need mysql user to provide remote access define user as follows.
+
+CREATE USER 'tharindu'@'%' IDENTIFIED BY 'my_password';
+CREATE USER 'tharindu'@'remote_host_ip' IDENTIFIED BY 'my_password';
+
+mysql> SELECT User, Host, plugin FROM mysql.user;
++------------------+-----------+-----------------------+
+| User             | Host      | plugin                |
++------------------+-----------+-----------------------+
+| debian-sys-maint | localhost | caching_sha2_password |
+| mysql.infoschema | localhost | caching_sha2_password |
+| mysql.session    | localhost | caching_sha2_password |
+| mysql.sys        | localhost | caching_sha2_password |
+| root             | localhost | auth_socket           |
+| tharindu         | localhost | mysql_native_password |
++------------------+-----------+-----------------------+
+6 rows in set (0.00 sec)
+
+mysql>
+
+-- after that we need to use following command to login and enter the password
+mysql -u tharindu -p
 
 mysql> show databases;
 +--------------------+
@@ -569,19 +606,24 @@ SELECT title, stock_quantity,
     END AS STOCK
 FROM books;
 
--- #######################################################
--- Relational database concepts
--- #######################################################
-
-
--- Primary key -  Table column (or combination of columns) designated to uniquely identify each table record
--- Foreign key -  Column or group of columns in a relational database table that provides a link between data in two tables
-
--- When we define our schema with primary key. RDMS (MySQL) will not allow us to create dupliate entery for for primary key colunm
--- Also when we define our schema with foreign key RDMS will not allow us to create table entery that contain foreign key colunm value doesn't including in other table
--- as an example we cant create a order entery in the order table for customer id does not exisit in customer table
-
 /*
+#######################################################
+#######################################################
+Relational database concepts
+#######################################################
+
+#######################################################
+Primary key & Foreign key
+#######################################################
+
+Primary key -  Table column (or combination of columns) designated to uniquely identify each table record
+Foreign key -  Column or group of columns in a relational database table that provides a link between data in two tables
+
+When we define our schema with primary key. RDMS (MySQL) will not allow us to create dupliate entery for for primary key colunm
+Also when we define our schema with foreign key RDMS will not allow us to create table entery that contain foreign key colunm value doesn't including in other table
+as an example we cant create a order entery in the order table for customer id does not exisit in customer table
+
+
 #######################################################
 different types of relational database tables.
 #######################################################
@@ -589,11 +631,27 @@ different types of relational database tables.
 One to One relationship - single row of the first table can only be related to one and only one records of a second table
 One to many or many to one relationship - Any single rows of the first table can be related to one or more rows of the second tables
 Many to many relationships - Each record of the first table can relate to any records (or no records) in the second table
-*/
 
+
+#######################################################
+Cardinality
+#######################################################
+
+Cardinality defines the possible number of occurrences in one entity which is associated with the number of occurrences in another
+There are fix types of Cardinality
+
+one
+many
+only one
+zero or one
+one or many
+zero or many
+
+*/
 
 -- Creating the customers and orders tables (define schema)
 
+-- define primary key in table schema
 CREATE TABLE customers(
     id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100),
@@ -601,6 +659,7 @@ CREATE TABLE customers(
     email VARCHAR(100)
 );
 
+-- define foreign key in table schema
 CREATE TABLE orders(
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_date DATE,
@@ -638,13 +697,220 @@ select * from orders where customer_id = (select id from customers where first_n
 -- #################################################
 -- SQL JOIN operations
 
--- useless cross join (will create raws by combining both tables with all the possible combinations)
+/*
+Here are the different types of the JOINs in SQL:
+
+    (INNER) JOIN: Returns records that have matching values in both tables
+    LEFT (OUTER) JOIN: Returns all records from the left table, and the matched records from the right table
+    RIGHT (OUTER) JOIN: Returns all records from the right table, and the matched records from the left table
+    FULL (OUTER) JOIN: Returns all records when there is a match in either left or right table
+*/
+
+-- #################################################
+-- USELESS CROSS/FULL/OUTER JOIN operations
+
+-- USELESS CROSS JOIN (will create raws by combining both tables with all the possible combinations)
 select * from customers, orders;
+
+-- #################################################
+-- SQL INNER JOIN operations
+
 -- we can get meaningful inner join by adding where condition to above cross join 
 -- but we need to prepend table name with the colunm name in the where condition
+-- IMPLICIT INNER JOIN
 select * from customers, orders where customers.id=orders.customer_id;
-
+-- IMPLICIT INNER JOIN
 SELECT first_name, last_name, order_date, amount
 FROM customers, orders 
     WHERE customers.id = orders.customer_id;
 
+-- EXPLICIT INNER JOINS
+
+SELECT * FROM customers
+JOIN orders
+    ON customers.id = orders.customer_id;
+-- chaning table order will case to change the colum order to final table output
+SELECT * FROM orders
+JOIN customers
+    ON customers.id = orders.customer_id;
+
+SELECT first_name, last_name, order_date, amount 
+FROM customers
+JOIN orders
+    ON customers.id = orders.customer_id;
+
+-- order by date with inner join
+SELECT first_name, last_name, order_date, amount 
+FROM customers
+JOIN orders
+    ON customers.id = orders.customer_id
+ORDER BY order_date;
+
+-- total spend of customers 
+-- group by and order by with inner join
+SELECT 
+    first_name, 
+    last_name, 
+    SUM(amount) AS total_spent
+FROM customers
+JOIN orders
+    ON customers.id = orders.customer_id
+GROUP BY orders.customer_id
+ORDER BY total_spent DESC;
+
+-- we can just add inner keyword with the join
+-- this will not make any change
+
+SELECT 
+    first_name, 
+    last_name, 
+    SUM(amount) AS total_spent
+FROM customers
+INNER JOIN orders
+    ON customers.id = orders.customer_id
+GROUP BY orders.customer_id
+ORDER BY total_spent DESC;
+
+-- #################################################
+-- SQL LEFT JOIN operations
+
+-- here relatationship in between customers table and orders table is 
+-- customer can have zero or many orders where order only has one customer
+-- zero or many (customers) to only one (order)
+
+-- we can use database name in front of table name so no need to specially use database at 1st before excute queries
+
+-- base on the table order in the query there are two left join we can get
+-- In join statement 1st defined table is the left table
+-- 2nd defined table is the right table
+
+
+SELECT * FROM online_shop.customers         --customers left table
+LEFT JOIN online_shop.orders                --orders right table
+    ON online_shop.customers.id = online_shop.orders.customer_id; -- as this is left join will return join+left table (customers)
+
+SELECT * FROM online_shop.orders            --orders left table
+RIGHT JOIN online_shop.customers            --customers right table
+    ON online_shop.customers.id = online_shop.orders.customer_id; -- as this is right join will return join+right table (customers)
+
+-- therefore results of above both will be same but column worder will be changed as follows.
+
+/*
+mysql> SELECT
+    ->     *
+    -> FROM
+    ->     online_shop.customers
+    ->         LEFT JOIN
+    ->     online_shop.orders ON online_shop.customers.id = online_shop.orders.customer_id;
++----+------------+-----------+------------------+------+------------+--------+-------------+
+| id | first_name | last_name | email            | id   | order_date | amount | customer_id |
++----+------------+-----------+------------------+------+------------+--------+-------------+
+|  1 | Boy        | George    | george@gmail.com |    2 | 2017-11-11 |  35.50 |           1 |
+|  1 | Boy        | George    | george@gmail.com |    1 | 2016-02-10 |  99.99 |           1 |
+|  2 | George     | Michael   | gm@gmail.com     |    4 | 2015-01-03 |  12.50 |           2 |
+|  2 | George     | Michael   | gm@gmail.com     |    3 | 2014-12-12 | 800.67 |           2 |
+|  3 | David      | Bowie     | david@gmail.com  | NULL | NULL       |   NULL |        NULL |
+|  4 | Blue       | Steele    | blue@gmail.com   | NULL | NULL       |   NULL |        NULL |
+|  5 | Bette      | Davis     | bette@aol.com    |    5 | 1999-04-11 | 450.25 |           5 |
++----+------------+-----------+------------------+------+------------+--------+-------------+
+7 rows in set (0.00 sec)
+
+mysql>
+mysql> SELECT
+    ->     *
+    -> FROM
+    ->     online_shop.orders
+    ->         RIGHT JOIN
+    ->     online_shop.customers ON online_shop.customers.id = online_shop.orders.customer_id;
++------+------------+--------+-------------+----+------------+-----------+------------------+
+| id   | order_date | amount | customer_id | id | first_name | last_name | email            |
++------+------------+--------+-------------+----+------------+-----------+------------------+
+|    2 | 2017-11-11 |  35.50 |           1 |  1 | Boy        | George    | george@gmail.com |
+|    1 | 2016-02-10 |  99.99 |           1 |  1 | Boy        | George    | george@gmail.com |
+|    4 | 2015-01-03 |  12.50 |           2 |  2 | George     | Michael   | gm@gmail.com     |
+|    3 | 2014-12-12 | 800.67 |           2 |  2 | George     | Michael   | gm@gmail.com     |
+| NULL | NULL       |   NULL |        NULL |  3 | David      | Bowie     | david@gmail.com  |
+| NULL | NULL       |   NULL |        NULL |  4 | Blue       | Steele    | blue@gmail.com   |
+|    5 | 1999-04-11 | 450.25 |           5 |  5 | Bette      | Davis     | bette@aol.com    |
++------+------------+--------+-------------+----+------------+-----------+------------------+
+7 rows in set (0.01 sec)
+
+mysql>
+*/
+
+
+SELECT * FROM online_shop.orders
+LEFT JOIN online_shop.customers
+    ON online_shop.customers.id = online_shop.orders.customer_id;
+
+SELECT * FROM online_shop.customers
+RIGHT JOIN online_shop.orders
+    ON online_shop.customers.id = online_shop.orders.customer_id;
+
+
+/*
+mysql>
+mysql> SELECT * FROM online_shop.orders
+    -> LEFT JOIN online_shop.customers
+    ->     ON online_shop.customers.id = online_shop.orders.customer_id;
++----+------------+--------+-------------+------+------------+-----------+------------------+
+| id | order_date | amount | customer_id | id   | first_name | last_name | email            |
++----+------------+--------+-------------+------+------------+-----------+------------------+
+|  1 | 2016-02-10 |  99.99 |           1 |    1 | Boy        | George    | george@gmail.com |
+|  2 | 2017-11-11 |  35.50 |           1 |    1 | Boy        | George    | george@gmail.com |
+|  3 | 2014-12-12 | 800.67 |           2 |    2 | George     | Michael   | gm@gmail.com     |
+|  4 | 2015-01-03 |  12.50 |           2 |    2 | George     | Michael   | gm@gmail.com     |
+|  5 | 1999-04-11 | 450.25 |           5 |    5 | Bette      | Davis     | bette@aol.com    |
++----+------------+--------+-------------+------+------------+-----------+------------------+
+5 rows in set (0.00 sec)
+
+mysql>
+mysql> SELECT * FROM online_shop.customers
+    -> RIGHT JOIN online_shop.orders
+    ->     ON online_shop.customers.id = online_shop.orders.customer_id;
++------+------------+-----------+------------------+----+------------+--------+-------------+
+| id   | first_name | last_name | email            | id | order_date | amount | customer_id |
++------+------------+-----------+------------------+----+------------+--------+-------------+
+|    1 | Boy        | George    | george@gmail.com |  1 | 2016-02-10 |  99.99 |           1 |
+|    1 | Boy        | George    | george@gmail.com |  2 | 2017-11-11 |  35.50 |           1 |
+|    2 | George     | Michael   | gm@gmail.com     |  3 | 2014-12-12 | 800.67 |           2 |
+|    2 | George     | Michael   | gm@gmail.com     |  4 | 2015-01-03 |  12.50 |           2 |
+|    5 | Bette      | Davis     | bette@aol.com    |  5 | 1999-04-11 | 450.25 |           5 |
++------+------------+-----------+------------------+----+------------+--------+-------------+
+5 rows in set (0.00 sec)
+
+mysql>
+*/
+
+
+SELECT * FROM orders
+INNER JOIN customers
+    ON customers.id = orders.customer_id;
+
+SELECT first_name, last_name, order_date, amount
+FROM customers
+LEFT JOIN orders
+    ON customers.id = orders.customer_id; 
+
+-- find total spend of all customers (even the customers didnt place any order)
+SELECT 
+    first_name, 
+    last_name,
+    IFNULL(SUM(amount), 0) AS total_spent
+FROM customers
+LEFT JOIN orders
+    ON customers.id = orders.customer_id
+GROUP BY customers.id
+ORDER BY total_spent;
+
+
+-- #################################################
+-- SQL RIGHT JOIN operations
+
+SELECT * FROM customers
+RIGHT JOIN orders
+ON customers.id = orders.customer_id;
+
+SELECT * FROM orders
+RIGHT JOIN customers
+ON customers.id = orders.customer_id;
