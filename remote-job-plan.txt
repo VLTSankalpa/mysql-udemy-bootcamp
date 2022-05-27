@@ -1,0 +1,268 @@
+###############################################
+# IT Field Highest Demanding Jobs
+###############################################
+
+# Data Science
+Data Scientist
+Machine Learning Engineer
+Big Data Enginner
+Data Engineer
+
+# DevOps & Cloud
+DevOps Engineer
+Cloud Engineer
+
+# Web Development
+Web Developer
+App Developer
+React/Node Developer
+
+###############################################
+Skills
+###############################################
+
+# Data Science Skills
+1) Cloud (GCP Data Engineer, GCP Machine Learning Engineer)   # SQL, Hadoop, Spark, Beam, Airflow
+2) Big Data (Hadoop Echo System)
+3) TensorFlow (ANN/CNN/RNN/NLP & other DL technologies)
+4) Python Coding & OPP
+-Apache Beam
+-Apache Spark
+-MySQL
+-MongoDB
+GIT and version control (git merge and conflit handeling)
+Tableau
+Power BI
+ML techniques
+Math and Statistical skills
+
+
+# DevOps & Cloud Skills
+AWS/GCP/Azure
+Linux
+Docker/K8
+Python
+MySQL/Mongo
+Ansible
+Terraform
+
+
+# Web Development Skills
+HTML
+CSS
+Bootstrap
+JavaScript
+Node.js
+ExpressJS
+REST API
+MONGODB
+MYSQL
+REACT.JS
+React native
+Docker & K8
+Linux
+Cloud (AWS, GCP, Azure)
+GIT
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Key requirements for international Remote oppertunity
+
+3. Certification
+	-AWS Dev
+	-AWS ML
+	-Azure DP-900
+	-Azure AI-900
+	-Hackerrank badges (Python, JS 10 days, SQL, 10 Days of State)
+	-Hackerrank certs (python, JS, NODE, CSS, SQL, REST)
+1. Skills
+	-Udemy Web Dev course (HTML, CSS, Bootstrap, JS, REST, NODEJS, MONGO DB) 
+2. Experience
+	-Make good web site after finshing Udemy Web Dev course
+	-CSR automation System on AWS cloud (Udemy Web Dev course)
+	-Go as intern for international company
+IELTS
+	-After doing above 4 certs this is must before think about more certs
+MSc
+	-SLIIT IT MSc
+	-IIT Big Data MSc
+	
+	
+Data Scientist
+##############
+
+GIT and version control (git merge and conflit handeling)
+Python Coding & OPP
+SQL DB
+Non SQL DB
+Tableau
+Power BI
+ML techniques
+Math and Statistical skills
+Big Data (Hadoop)
+TensorFlow (ANN/CNN/RNN/NLP & other DL technologies)
+Cloud (AWS, GCP, Azure)
+
+
+Full Stack Developer
+####################
+1. HTML
+2. CSS
+3. Bootstrap (CSS framework)
+4. JavaScript
+#jQuery
+5. Node.js (back-end)
+#React.js (front-end js library)
+#angular.js (front-end js framework)
+Git and GitHub
+#Back-end languages (PHP, Python, Java)
+#REST API Testing
+#Database storage (SQL/Non-SQL)
+#Cloud (AWS, Azure)
+
+#MYSQL
+#React.js (front-end js library)
+#React native
+
+#angular.js (front-end js framework)
+#Python
+#Rest API Testing
+#Back-end languages (PHP)
+#jQuery
+
+
+
+
+
+
+
+
+
+
+################ Priority List 
+
+# Full Stack Developer
+1. HTML
+2. CSS
+3. Bootstrap
+4. JavaScript
+5. Node.js
+6. ExpressJS
+7. REST API
+8. MONGO DB
+9. MYSQL
+10. REACT.JS
+11. React native
+12. Docker & K8
+13. Linux
+14. Cloud (AWS, GCP, Azure)
+15. GIT
+
+# ML Engineer
+13. ML techniques (NLP)
+14. ANN/CNN/RNN & other DL technologies
+15. TensorFlow
+16. Apache Spark
+17. AWS ML
+18. Tableau
+
+
+# Cloud Engineer
+AWS
+GCP
+Azure
+Linux
+
+
+# Certification
+1. REDHAT
+2. CKA
+3. CKAD
+4. AWS SOL
+
+5. TENSOR DEV
+6. AWS DEV
+
+# Courses
+1. System Admin
+2. Docker and Kubernetes
+3. CKA
+4. CKAD
+5. AWS SOL
+
+6. React.js (only summary section)
+7. Web Dev
+8. Node.js
+9. Tensorflow Dev
+10. AWS DEV
+11. AWS ML
+
+
+
+
+# Web Development
+Learn HTML, CSS, JS, React, Node, MySQL, MongoBD, NodeJS
+
+
+# Docker & K8
+Learn Docker, Kubernets
+CKAD cert
+
+# Linux
+Learn Linux
+RHCA or some another linux cert
+
+# AWS
+Learn AWS
+AWS SOL, DEV
+
+
+
+
+
+
+
+
+
+
+
+
+

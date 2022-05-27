@@ -394,7 +394,8 @@ mysql>
 -- insert data to table from csv file
 
 -- create table
-CREATE TABLE nodes(
+CREATE TABLE nodes4(
+id INT AUTO_INCREMENT PRIMARY KEY,
 device_name VARCHAR(255),
 ip VARCHAR(255),
 device_type VARCHAR(255),
@@ -408,7 +409,12 @@ serial_number VARCHAR(255))
 
 -- insert data from csv
 LOAD DATA INFILE '/var/lib/mysql-files/epnm-inventory.csv'
-INTO TABLE nodes
+INTO TABLE nodes4
+FIELDS TERMINATED BY ',';
+
+-- skill duplicate records
+LOAD DATA INFILE '/var/lib/mysql-files/epnm-inventory.csv'
+IGNORE INTO TABLE nodes
 FIELDS TERMINATED BY ','
 
 --Query data and filter rows with a condition
@@ -668,6 +674,9 @@ CREATE TABLE orders(
     FOREIGN KEY(customer_id) REFERENCES customers(id)
 );
 
+
+
+
 -- Inserting some customers and orders
 
 INSERT INTO customers (first_name, last_name, email) 
@@ -787,11 +796,11 @@ ORDER BY total_spent DESC;
 
 SELECT * FROM online_shop.customers         --customers left table
 LEFT JOIN online_shop.orders                --orders right table
-    ON online_shop.customers.id = online_shop.orders.customer_id; -- as this is left join will return join+left table (customers)
+    ON online_shop.customers.id = online_shop.orders.customer_id; -- as this is left join will return inner-join+left table (customers)
 
 SELECT * FROM online_shop.orders            --orders left table
 RIGHT JOIN online_shop.customers            --customers right table
-    ON online_shop.customers.id = online_shop.orders.customer_id; -- as this is right join will return join+right table (customers)
+    ON online_shop.customers.id = online_shop.orders.customer_id; -- as this is right join will return inner-join+right table (customers)
 
 -- therefore results of above both will be same but column worder will be changed as follows.
 
@@ -897,15 +906,16 @@ SELECT
     first_name, 
     last_name,
     IFNULL(SUM(amount), 0) AS total_spent
-FROM customers
-LEFT JOIN orders
-    ON customers.id = orders.customer_id
+FROM online_shop.customers
+LEFT JOIN online_shop.orders
+    ON online_shop.customers.id = online_shop.orders.customer_id
 GROUP BY customers.id
 ORDER BY total_spent;
 
 
 -- #################################################
 -- SQL RIGHT JOIN operations
+-- already checked the right joins
 
 SELECT * FROM customers
 RIGHT JOIN orders
@@ -914,3 +924,137 @@ ON customers.id = orders.customer_id;
 SELECT * FROM orders
 RIGHT JOIN customers
 ON customers.id = orders.customer_id;
+
+-- #################################################
+-- SQL RIGHT JOIN operations with many to many releationships
+
+-- CREATINGTHE REVIEWERSTABLE
+
+
+CREATE TABLE reviewers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100)
+);
+
+-- CREATINGTHE SERIES TABLE
+
+CREATE TABLE series(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100),
+    released_year YEAR(4),
+    genre VARCHAR(100)
+);
+
+-- CREATINGTHE REVIEWSTABLE
+
+CREATE TABLE reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    rating DECIMAL(2,1),
+    series_id INT,
+    reviewer_id INT,
+    FOREIGN KEY(series_id) REFERENCES series(id),
+    FOREIGN KEY(reviewer_id) REFERENCES reviewers(id)
+);
+
+-- INSERTINGABUNCHOFDATA
+
+INSERT INTO series (title, released_year, genre) VALUES
+    ('Archer', 2009, 'Animation'),
+    ('Arrested Development', 2003, 'Comedy'),
+    ("Bob's Burgers", 2011, 'Animation'),
+    ('Bojack Horseman', 2014, 'Animation'),
+    ("Breaking Bad", 2008, 'Drama'),
+    ('Curb Your Enthusiasm', 2000, 'Comedy'),
+    ("Fargo", 2014, 'Drama'),
+    ('Freaks and Geeks', 1999, 'Comedy'),
+    ('General Hospital', 1963, 'Drama'),
+    ('Halt and Catch Fire', 2014, 'Drama'),
+    ('Malcolm In The Middle', 2000, 'Comedy'),
+    ('Pushing Daisies', 2007, 'Comedy'),
+    ('Seinfeld', 1989, 'Comedy'),
+    ('Stranger Things', 2016, 'Drama');
+
+
+INSERT INTO reviewers (first_name, last_name) VALUES
+    ('Thomas', 'Stoneman'),
+    ('Wyatt', 'Skaggs'),
+    ('Kimbra', 'Masters'),
+    ('Domingo', 'Cortes'),
+    ('Colt', 'Steele'),
+    ('Pinkie', 'Petit'),
+    ('Marlon', 'Crafford');
+    
+
+INSERT INTO reviews(series_id, reviewer_id, rating) VALUES
+    (1,1,8.0),(1,2,7.5),(1,3,8.5),(1,4,7.7),(1,5,8.9),
+    (2,1,8.1),(2,4,6.0),(2,3,8.0),(2,6,8.4),(2,5,9.9),
+    (3,1,7.0),(3,6,7.5),(3,4,8.0),(3,3,7.1),(3,5,8.0),
+    (4,1,7.5),(4,3,7.8),(4,4,8.3),(4,2,7.6),(4,5,8.5),
+    (5,1,9.5),(5,3,9.0),(5,4,9.1),(5,2,9.3),(5,5,9.9),
+    (6,2,6.5),(6,3,7.8),(6,4,8.8),(6,2,8.4),(6,5,9.1),
+    (7,2,9.1),(7,5,9.7),
+    (8,4,8.5),(8,2,7.8),(8,6,8.8),(8,5,9.3),
+    (9,2,5.5),(9,3,6.8),(9,4,5.8),(9,6,4.3),(9,5,4.5),
+    (10,5,9.9),
+    (13,3,8.0),(13,4,7.2),
+    (14,2,8.5),(14,3,8.9),(14,4,8.9);
+
+
+-- Q1) getting titles assocated with all the reviews
+
+select title, rating from series
+join reviews
+on series.id=reviews.series_id;
+
+select title, rating from series
+left join reviews
+on series.id=reviews.series_id;
+
+select title, rating from series
+right join reviews
+on series.id=reviews.series_id;
+
+-- Q2) Getting average rating for each series
+
+select title, AVG(rating) as average_rating from series
+join reviews
+on series.id=reviews.series_id
+group by title
+order by average_rating desc;
+
+-- title is not unique in series table
+-- series.id is the only uniqe colunm in the series table
+
+select series.id as series_id, title, AVG(rating) as average_rating from series
+join reviews
+on series.id=reviews.series_id
+group by series_id
+order by average_rating desc;
+
+-- Q3) Getting all the reviews with reviewer details
+
+select rating,first_name, last_name  from reviews
+JOIN reviewers
+on reviews.reviewer_id = reviewers.id;
+
+-- Q4) Getting all the unreviewed series
+
+SELECT 
+    title AS unreviewed_series
+FROM
+    series
+        LEFT JOIN
+    reviews ON series.id = reviews.series_id
+WHERE
+    reviews.rating IS NULL;
+
+-- Q5) Getting average rating for each genre
+
+SELECT 
+    genre, round(AVG(rating),2) as average_rating
+FROM
+    series
+        JOIN
+    reviews ON series.id = reviews.series_id
+GROUP BY genre;
